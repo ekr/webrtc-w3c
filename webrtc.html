@@ -1809,7 +1809,44 @@ function mediaStream(c,x,y,vid) {
     readyState will be changed to CLOSED.  </p> </li>
   
 </ol>
-    
+
+  <p>When a <code><a>PeerConnection</a></code> detects that it, for any reason, needs to
+  emit a new signaling message, the user agent must run the following steps:<p>
+
+  <ol>
+    <li>
+      <p>Let <var>connection</var> be the <code><a>PeerConnection</a></code> object that
+      needs to emit a signaling message.</p>
+    </li>
+
+    <li>
+      <p>Let <var>type</var> be the intended message type (i.e. "<code>OFFER</code>",
+      "<code>ANSWER</code>" or "<code>CANDIDATE</code>" as decided by the dispatching Agent).</p>
+    </li>
+
+    <li>
+      <p>Let <var>sdp</var> be the SDP data to be conveyed to the other peer.</p>
+    </li>
+
+    <li>
+      <p>Let <var>header</var> be the concatenation of the string "<code>SDP</code>",
+      a U+0020 SPACE character, <var>type</var>, a U+0020 SPACE character, the
+      <a href="#peerconnection-id"><code>PeerConnection</code> id</a> associated with
+      <var>connection</var> and finally two U+000A LINE FEED (LF) characters.</p>
+    </li>
+
+    <li>
+      <p>Let <var>message</var> be <var>header</var> concatenated with <var>sdp</var>.</p>
+    </li>
+
+    <li>
+      <p>Queue a task to invoke <var>connection</var>’s
+      <a href="#peerconnection-signaling-callback"><code>PeerConnection</code> signaling
+      callback</a> with <var>message</var> as the first argument and <var>connection</var>
+      as the second argument.</p>
+    </li>
+  </ol>
+
   <p>User agents MAY negotiate any codec and any resolution, bitrate, or other quality
   metric. User agents are encouraged to initially negotiate for the native resolution of
   the stream. For streams that are then rendered (using a <code>video</code> element),
@@ -3093,6 +3130,7 @@ local.onaddstream = function (event) {
     <li>Updated the algorithm that is run when PeerConnection receives a stream (create new
     stream when negotiated instead of when data arrives).</li>
     <li>Introduced PeerConnection id (to be used in signaling message header etc.).</li>
+    <li>Added an algorithm for dispatching signaling messages (constructs message header etc.).</li>
  </ol>
   
   </section>
