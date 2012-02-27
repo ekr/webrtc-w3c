@@ -1578,8 +1578,10 @@ function mediaStream(c,x,y,vid) {
   'peerconnection-data-udp-media-stream'><code>PeerConnection</code> data UDP media
   stream</dfn>, -->
   a <dfn id='peerconnection-readiness-state'><code>PeerConnection</code>
-  readiness state</dfn> and an <dfn id='ice-started-flag'>SDP Agent</dfn>. These
-  are initialized when the object is created.</p>
+  readiness state</dfn>, an <dfn id='ice-started-flag'>SDP Agent</dfn> and a
+  <dfn id='peerconnection-id'><code>PeerConnection</code> id</dfn> that is included
+  in every generated signaling message to differentiate locally produces signaling
+  messages from remotely produced ones. These are initialized when the object is created.</p>
 
   <p>When the <dfn id='dom-peerconnection'><code>PeerConnection()</code></dfn> constructor is invoked, the
   user agent MUST run the following steps. This algorithm has a synchronous
@@ -3090,6 +3092,7 @@ local.onaddstream = function (event) {
     <li>Introduced MediaStreamTrackList interface with support for adding and removing tracks.</li>
     <li>Updated the algorithm that is run when PeerConnection receives a stream (create new
     stream when negotiated instead of when data arrives).</li>
+    <li>Introduced PeerConnection id (to be used in signaling message header etc.).</li>
  </ol>
   
   </section>
