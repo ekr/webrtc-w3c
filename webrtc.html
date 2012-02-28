@@ -2723,30 +2723,38 @@ function mediaStream(c,x,y,vid) {
     <p>When two peers decide they are going to set up a connection to each other, they
     both go through these steps. The STUN/TURN server configuration describes a server
     they can use to get things like their public IP address or to set up NAT traversal.
-    They also have to send data for the signaling channel to each other using the same
+    They also have to exchange signaling messages with each other using the same
     out-of-band mechanism they used to establish that they were going to communicate in
     the first place.</p>
     <pre  class='example sh_javascript'>
-// the first argument describes the STUN/TURN server configuration
-var local = new PeerConnection('TURNS example.net', sendSignalingChannel);
-local.signalingChannel(...); // if we have a message from the other side, pass it along here
+// this function is called with an initialOffer if we're being called; initialOffer is null if we're initiating a call
+function configureLocalPeer(initialOffer) {
+  navigator.getUserMedia({"audio": true, "video": true}, function (localStream) {
+    // the first argument describes the STUN/TURN server configuration;
+    // direct all generated signaling messages to the other peer via the signaling channel
+    pc = new PeerConnection("TURNS example.net", signalingChannel.send);
 
-// (aLocalStream is some LocalMediaStream object)
-local.addStream(aLocalStream); // start sending video
+    // reset message handler to feed incoming signaling messages to PeerConnection
+    signalingChannel.onmessage = function (evt) {
+      pc.processSignalingMessage(evt.data);
+    };
 
-function sendSignalingChannel(message) {
-  ... // send message to the other side via the signaling channel
+    // once remote stream arrives, show it in the remote view video element
+    pc.onaddstream = function (evt) {
+      remoteView.src = URL.createObjectURL(evt.stream);
+    };
+
+    // if we have a initial offer (we're being called), process it
+    if (initialOffer)
+      pc.processSignalingMessage(initialOffer);
+
+    // show local stream as self-view
+    selfView.src = URL.createObjectURL(localStream);
+
+    // add local stream to be sent
+    pc.addStream(localStream);
+  });
 }
-
-function receiveSignalingChannel (message) {
-  // call this whenever we get a message on the signaling channel
-  local.signalingChannel(message);
-}
-
-local.onaddstream = function (event) {
-  // (videoElement is some &lt;video&gt; element)
-  videoElement.src = URL.createObjectURL(event.stream);
-};
 </pre>
   </div>
   </section>
@@ -3186,6 +3194,7 @@ local.onaddstream = function (event) {
     <li>Introduced PeerConnection id (to be used in signaling message header etc.).</li>
     <li>Added an algorithm for dispatching signaling messages (constructs message header etc.).</li>
     <li>Updated processSignalingMessage() algorithm to map to JSEP.</li>
+    <li>Replaced broken PeerConnection example with a more complete and working one.</li>
  </ol>
   
   </section>
