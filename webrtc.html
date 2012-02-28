@@ -1578,7 +1578,7 @@ function mediaStream(c,x,y,vid) {
   'peerconnection-data-udp-media-stream'><code>PeerConnection</code> data UDP media
   stream</dfn>, -->
   a <dfn id='peerconnection-readiness-state'><code>PeerConnection</code>
-  readiness state</dfn>, an <dfn id='ice-started-flag'>SDP Agent</dfn> and a
+  readiness state</dfn>, a <dfn id='peerconnection-sdp-agent'><code>PeerConnection</code> SDP Agent</dfn> and a
   <dfn id='peerconnection-id'><code>PeerConnection</code> id</dfn> that is included
   in every generated signaling message to differentiate locally produces signaling
   messages from remotely produced ones. These are initialized when the object is created.</p>
@@ -2060,26 +2060,80 @@ function mediaStream(c,x,y,vid) {
         </li>
 
         <li>
-          <p>If the first four characters of <var>message</var> are not
-          "<code>SDP</code>" followed by a U+000A LINE FEED (LF) character, then
-          abort these steps. (This indicates an error in the signaling channel
-          implementation. User agents MAY report such errors to their developer consoles
-          to aid debugging.)</p>
-
-          <p class='note'>Future extensions to the <code><a>PeerConnection</a></code> interface might use other prefix
-          values to implement additional features.</p>
+          <p>Let <var>header</var> be all characters in <var>message</var> up to the first
+          U+000A LINE FEED (LF) character.</p>
         </li>
 
         <li>
-          <p>Let <var>sdp</var> be the string consisting of all but the first
-          four characters of <var>message</var>.</p>
+          <p><span>Split <var>header</var> on spaces</span> to obtain a <var>list of header
+          components</var>. If the length of <var>list of header components</var> is anything
+          other than 3, then throw a <code>NOT_SUPPORTED_ERR</code> exception and abort these
+          steps.</p>
         </li>
 
         <li>
-          <p> Pass the <var>sdp</var> to the <a href=
-          "#peerconnection-ice-agent"><code>PeerConnection</code> SDP Agent</a>  as a
-          subsequent offer or answer, to be interpreted as appropriate given the current
-          state of the SDP Agent. [[!ICE]]</p>
+          <p>If the first token in <var>list of header components</var> is not a
+          <span>case-sensitive</span> match for "<code>SDP</code>", then throw a
+          <code>NOT_SUPPORTED_ERR</code> exception and abort these steps.</p>
+        </li>
+
+        <li>
+          <p>Let <var>type</var> be the value of the second token in <var>list of header
+          components</var>.</p>
+        </li>
+
+        <li>
+          <p>If the third token in <var>list of header components</var> is equal to the
+          <a href="#peerconnection-id"><code>PeerConnection</code> id</a> associated with
+          <var>connection</var>, let <var>local</var> be true, otherwise let <var>local</var>
+          be false.</p>
+        </li>
+
+        <li>
+          <p>Let <var>sdp</var> be all characters in <var>message</var> after the first
+          occurrence of two consecutive U+000A LINE FEED (LF) characters.</p>
+        </li>
+
+        <li>
+          <p>If <var>type</var> is a <span>case-sensitive</span> match to "<code>OFFER</code>",
+          and <var>local</var> is true, then instruct the <a href="#peerconnection-sdp-agent">
+          <code>PeerConnection</code> SDP Agent</a> to process <var>sdp</var> as a local
+          description of type offer and abort these steps.</p>
+        </li>
+
+        <li>
+          <p>If <var>type</var> is a <span>case-sensitive</span> match to "<code>OFFER</code>",
+          and <var>local</var> is false, then instruct the <a href="#peerconnection-sdp-agent">
+          <code>PeerConnection</code> SDP Agent</a> to process <var>sdp</var> as a remote
+          description of type offer and abort these steps.</p>
+        </li>
+
+        <li>
+          <p>If <var>type</var> is a <span>case-sensitive</span> match to "<code>ANSWER</code>",
+          and <var>local</var> is true, then instruct the <a href="#peerconnection-sdp-agent">
+          <code>PeerConnection</code> SDP Agent</a> to process <var>sdp</var> as a local
+          description of type answer and abort these steps.</p>
+        </li>
+
+        <li>
+          <p>If <var>type</var> is a <span>case-sensitive</span> match to "<code>ANSWER</code>",
+          and <var>local</var> is false, then instruct the <a href="#peerconnection-sdp-agent">
+          <code>PeerConnection</code> SDP Agent</a> to process <var>sdp</var> as a remote
+          description of type answer and abort these steps.</p>
+        </li>
+
+        <li>
+          <p>If <var>type</var> is a <span>case-sensitive</span> match to "<code>CANDIDATE</code>",
+          and <var>local</var> is false, then let the <a href="#peerconnection-ice-agent">
+          <code>PeerConnection</code> ICE Agent</a> process <var>sdp</var> and abort these
+          steps.</p>
+
+          <p class="note">JSEP will specify how the SDP and ICE Agents will react upon receiving
+          the signaling messages.</p>
+        </li>
+
+        <li>
+          <p>Throw a <code>NOT_SUPPORTED_ERR</code> exception.</p>
         </li>
 <!--
         <li>
@@ -3131,6 +3185,7 @@ local.onaddstream = function (event) {
     stream when negotiated instead of when data arrives).</li>
     <li>Introduced PeerConnection id (to be used in signaling message header etc.).</li>
     <li>Added an algorithm for dispatching signaling messages (constructs message header etc.).</li>
+    <li>Updated processSignalingMessage() algorithm to map to JSEP.</li>
  </ol>
   
   </section>
