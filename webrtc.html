@@ -1579,9 +1579,18 @@ function mediaStream(c,x,y,vid) {
   stream</dfn>, -->
   a <dfn id='peerconnection-readiness-state'><code>PeerConnection</code>
   readiness state</dfn>, a <dfn id='peerconnection-sdp-agent'><code>PeerConnection</code> SDP Agent</dfn> and a
-  <dfn id='peerconnection-id'><code>PeerConnection</code> id</dfn> that is included
-  in every generated signaling message to differentiate locally produces signaling
-  messages from remotely produced ones. These are initialized when the object is created.</p>
+  <dfn id='peerconnection-id'><code>PeerConnection</code> id</dfn>. These are
+  initialized when the object is created.</p>
+
+  <p>The <a href="#peerconnection-id"><code>PeerConnection</code> id</a> is included in
+  every generated signaling message to differentiate locally produces signaling messages
+  from remotely produced ones. When the <code><a>PeerConnection</a></code> object is
+  created, the user agent MUST generate a globally unique identifier string, and MUST
+  initialize the object’s <a href="#peerconnection-id"><code>PeerConnection</code> id</a>
+  to that string. Such strings MUST only use characters in the ranges U+0021, U+0023 to
+  U+0027, U+002A to U+002B, U+002D to U+002E, U+0030 to U+0039, U+0041 to U+005A, U+005E
+  to U+007E, and MUST be 36 characters long.</p> <!-- id definition borrowed from the
+  MediaStream label section; consider refactoring out a shared definition -->
 
   <p>When the <dfn id='dom-peerconnection'><code>PeerConnection()</code></dfn> constructor is invoked, the
   user agent MUST run the following steps. This algorithm has a synchronous
@@ -3195,6 +3204,7 @@ function configureLocalPeer(initialOffer) {
     <li>Added an algorithm for dispatching signaling messages (constructs message header etc.).</li>
     <li>Updated processSignalingMessage() algorithm to map to JSEP.</li>
     <li>Replaced broken PeerConnection example with a more complete and working one.</li>
+    <li>Introduced definition of PeerConnection id.</li>
  </ol>
   
   </section>
