@@ -52,7 +52,34 @@
        webrtc.html and webrtc-20111003.html
        respectively in the ../editor/. directory. 
     -->
-  <script src='http://dev.w3.org/2009/dap/ReSpec.js/js/respec.js' class=
+    <script class='remove'>
+      var respecConfig = {
+          specStatus: "ED",
+          shortName:  "wicked-cool",
+          edDraftURI: "http://dev.w3.org/respec2/docs/",
+          editors: [
+                {   name:       "Robin Berjon",
+                    url:        "http://berjon.com/",
+                    company:    "Vodafone",
+                    companyURL: "http://vodafone.com/" },
+                {   name:       "Gregg Kellogg",
+                    company:    "Kellogg Associates",
+                    companyURL: "http://kellogg-assoc.com/" },
+          ],
+          extraCSS:             ["../css/respec2.css"],
+          noIDLIn:  true,
+
+          wg:           "Device APIs and Policy Working Group",
+          wgURI:        "http://www.w3.org/2009/dap/",
+          wgPublicList: "public-device-apis",
+          wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/43696/status",
+      };
+    </script>
+    <!-- This is the real thing -->
+    <!-- <script src='../js/profiles/w3c-common.js' class='remove'></script>
+    <script data-main='w3c/profile-common' src='../js/require.js' class='remove'></script>-->
+    <script src='respec2-74c9d7eb6d4b/js/profiles/w3c-common-loader.js' class='remove'></script>
+<!--  <script src='respec2-74c9d7eb6d4b/js/w3c/style.js' class=
   'remove' type="text/javascript"></script>
   <script class='remove' type="text/javascript">
   var respecConfig = {
@@ -128,7 +155,7 @@
     // Team Contact.
     wgPatentURI:  "http://www.w3.org/2004/01/pp-impl/47318/status",
   };
-  </script>
+  </script>-->
 </head>
 
 <body>
