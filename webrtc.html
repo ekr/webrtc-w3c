@@ -4,7 +4,7 @@
   <head>
     <link href="./webrtc.css" rel="stylesheet" type="text/css" />
 
-    <title>JSEP1 BRANCH - WebRTC 1.0: Real-time Communication Between
+    <title> WebRTC 1.0: Real-time Communication Between
     Browsers</title>
 
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
@@ -828,14 +828,14 @@
         <dt>attribute SdpType type</dt>
         <dd>What type of SDP this SessionDescription represents.</dd>
         
-        <dt>attribute DOMString sdp</dt>
+        <dt>readonly attribute DOMString sdp</dt>
         <dd>The string representation of the SDP [[!SDP]]</dd>
             
         <!-- FIXME: this syntax is not fully supported by ReSpec -->
         <dt>stringifier DOMString ()</dt>
         <dd>
           <p>Objects that implement the <code><a>SessionDescription</a></code>
-          interface must stringify as TDB.</p>
+          interface must stringify as TBD.</p>
         </dd>
       </dl>
       </section>
@@ -1017,12 +1017,12 @@
 
         <dl class="idl" title="[Constructor (DOMString candidate)] interface IceCandidate">
 
-          <dt> attribute DOMString candidate </dt>
-          
-          <dd> This carries the candidate-attribute as defined in section 15.1 of
-          [[!ICE]]. ( Note - need to add more information to allow this to match
-          to correct m line ).  </dd>
-          
+          <dt> readonly attribute DOMString candidate </dt>
+         
+         <dd> This carries the candidate-attribute as defined in section 15.1 of
+         [[!ICE]]. ( Note - need to add more information to allow this to match
+         to correct m line ).  </dd>
+         
           <!-- FIXME: this syntax is not fully supported by ReSpec -->
           <dt>stringifier DOMString ()</dt>
           <dd>
