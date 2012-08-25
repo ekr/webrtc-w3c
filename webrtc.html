@@ -996,9 +996,17 @@
 
 
         <section>
-	<h3>IdentityAssertion Type</h3>
+	<h3>RTCIdentityAssertion Type</h3>
 
-	<dl class="idl" title="dictionary IdentityAssertion">
+	<dl class="idl" title="dictionary RTCIdentityAssertion">
+
+	  <dt>DOMString idp</dt>
+	  <dd>
+	    <p>
+              The identity provider, identified as a domain name.
+	    </p>
+	  </dd>
+
 	  <dt>DOMString name</dt>
 	  <dd>
 	    <p>
@@ -1221,6 +1229,12 @@
             the supplied <code><a>RTCSessionDescription</a></code> as the
             remote offer or answer. This API changes the local media state.</p>
 
+ 	    <p>
+ 	      If <code>a=identity</code> attributes are present, the browser
+              verifies the identity following the procedures in [XREF
+              sec.identity-proxy-assertion-request].
+ 	    </p>
+
             <p>Changes to the state of media transmission will occur when a
             final answer is successfully applied.
             <code><a>remoteDescription</a></code> MUST return the previous
@@ -1232,10 +1246,6 @@
             insufficient resources to apply the SDP. The user agent MUST roll
             back as necessary if the new description was partially applied when
             the failure occurred.</p>
-
- 	    <p>
- 	      If <code>a=identity</code> attributes are present, the browser
- 	    </p>
 
             <p>A TBD exception is thrown if the SDP content is invalid.</p>
           </dd>
@@ -1616,7 +1626,7 @@
 	  <dt>void getIdentityAssertion()</dt>
 	  <dd>
 	    <p>
-	      Initiates the process of obtianing an identity assertion.
+	      Initiates the process of obtaining an identity assertion.
 	      Applications need not make this call. It is merely intended to allow
 	      them to start the process of obtaining identity assertions before
 	      a call is initiated. If an identity is needed, either because
@@ -1646,7 +1656,7 @@
 	    </ol>
 	  </dd>
 
-	  <dt>readonly attribute IdentityAssertion peeridentity nullable</dt>
+	  <dt>readonly attribute RTCIdentityAssertion peeridentity nullable</dt>
 	  
 	  <dd>
 	    <p>Contains the peer identity assertion information if an 
@@ -1832,6 +1842,24 @@
           leakage of IP addresses in certain use cases. The value of "all"
           indicates all values can be used.</p>
         </dd>
+
+        <dt>RequestIdentity</dt>
+
+        <dd>
+          <p>This is a enum type constraint that can take the values "yes",
+          "no", and "ifconfigured". 
+          The default is a non mandatory "ifconfigured".</p>
+
+          <p>This constraint indicates whether an identity should be
+          be requested. The value "yes" means that an identity must be
+          requested. The value "no" means that no identity is to be
+          requested. The value "ifconfigured" means that an identity
+          will be requested if either the user has configured an
+          identity in the brower or if the <code>setIdentityProvider()</code>
+          call has been made by the JS.
+          </p>
+        </dd>
+
       </dl>
 
       <p>TODO items - need to register with IANA.</p>
@@ -2411,7 +2439,20 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
         an isolated interpreted context [TODO: What's the technical term?],
         such as an invisible IFRAME. The initial contents of the context
         are loaded from a URI derived from the IdP's domain name.
-        [RTCWEB-SECURITY-ARCH; Section XXX]. The context MUST have
+        [RTCWEB-SECURITY-ARCH; Section XXX]. The IdP shall be chosen as
+        follows:
+        <ol>
+          <li>If the <code>setIdentityProvider()</code> method has been called,
+            the IdP provided shall be used.</code></li>
+          <li>If the <code>setIdentityProvider()</code> method has not been called,
+            then the browser shall use an IdP configured into the browser. If more
+            than one such IdP is configured, the browser should provide the user
+            with a chooser interface.
+          </li>
+        </ol>
+      </p>
+      <p>
+        The context MUST have
         a MessageChannel named <code>window.TBD</code> which is "entangled" to the
         <code>PeerConnection</code> and is unique to that subcontext.
 	This channel is used for messaging between the <code>PeerConnection</code> and the IdP.
@@ -2438,7 +2479,7 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
       </p>
 
       <ol>
-	<li>The <code>PeerConnection</code> instantiates an IdP context as described in the previous section.</li>.
+	<li>The <code>PeerConnection</code> instantiates an IdP context as described in the previous section.</li>
 	<li>The IdP serves up the IdP JS code to the IdP context.</li>
 	<li>Once the IdP is loaded and ready to receive messages
 	it sends a "READY" message ([RTCWEB-SECURITY-ARCH; Section 5.6.5.2].
@@ -2467,8 +2508,32 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
     <section>
       <h3 id="sec.identity-proxy-assertion-request">Verifying Assertions</h3>
       <t>
-	
+	The identity assertion request process involves the following steps.
+      </p>
 
+      <ol>
+	<li>The <code>PeerConnection</code> instantiates an IdP context as described in the previous section.</li>
+	<li>The IdP serves up the IdP JS code to the IdP context.</li>
+	<li>Once the IdP is loaded and ready to receive messages
+	it sends a "READY" message ([RTCWEB-SECURITY-ARCH; Section 5.6.5.2].
+	Note that this does not imply that the user is logged in, merely
+	that enough IdP state is booted up to be ready to handle PostMessage
+	calls.</li>
+	<li>The IdP sends a "VERIFY" message (Section 5.6.5.2.2) to the
+	IdP proxy context. This message includes assertion from the
+        offer/answer which is to be verified.
+	</li>
+	<li>The IdP proxy verifies the identity assertion (depending on the 
+	authentication protocol this may involve interacting with the IDP server).</li>
+	<li>Once the assertion is verified the IdP proxy sends a response
+	containing the verified assertion results
+        (Section 5.6.5.2.3) to the <code>PeerConnection</code>
+	over the message channel.</li>
+	<li>The <code>PeerConnection</code> displays the assertion information 
+        in the browser UI and stores the assertion in the
+        peeridentity attribute for availability to the JS application.
+        </li>
+      </ol>
       </t>
     </section>
 
