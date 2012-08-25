@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -993,6 +994,31 @@
         </dl>
       </section>
 
+
+        <section>
+	<h3>IdentityAssertion Type</h3>
+
+	<dl class="idl" title="dictionary IdentityAssertion">
+	  <dt>DOMString name</dt>
+	  <dd>
+	    <p>
+	      An RFC822-conformant [TODO: REF]
+	      representation of the verified peer identity.
+	      This identity will have been verified via the 
+	      procedures described in [RTCWEB-SECURITY-ARCH].
+	    </p>
+	  </dd>
+
+	  <dt>DOMString displayname</dt>
+	  <dd>
+	    <p>
+	      A "human readable" representation of the peer identity.
+	      This string was provided by the identity provider but
+	      is not technically verified.
+	    </p>
+	</dl>
+      </section>
+
       <section>
         <h3>RTCPeerConnection Interface</h3>
 
@@ -1062,6 +1088,12 @@
             function. Calling this method is needed to get the ICE user name
             fragment and password.</p>
 
+	    <p>
+	      If the <code>PeerConnection</code> is configured to generate
+	      Identity assertions, then the session description SHALL contain
+	      an appropriate assertion.
+	    </p>
+
             <p>The failureCallback will be called if the system can not
             generate an appropriate offer given the state of the
             RTCPeerConnection.</p>
@@ -1072,6 +1104,7 @@
             <p>To Do: Discuss privacy aspects of this from a finger printing
             point of view - it's probably around as bad as access to a canvas
             :-)</p>
+
           </dd>
 
           <dt>void createAnswer (RTCSessionDescription offer,
@@ -1106,6 +1139,12 @@
             method is needed to get the ICE user name fragment and password.
             Provisional offers, as described in [[RTCWEB-JSEP]], are created if
             and only if the createProvisionalOffer flag is true.</p>
+
+	    <p>
+	      If the <code>PeerConnection</code> is configured to generate
+	      Identity assertions, then the session description SHALL contain
+	      an appropriate assertion.
+	    </p>
 
             <p>The failureCallback will be called if the system cannot
             generate an appropriate answer given the offer.</p>
@@ -1154,7 +1193,7 @@
             partially applied when the failure occurred.</p>
 
             <p>A TBD exception is thrown if the SDP content is invalid.</p>
-          </dd>
+          </dd>  
 
           <dt>readonly attribute RTCSessionDescription localDescription</dt>
 
@@ -1193,6 +1232,10 @@
             insufficient resources to apply the SDP. The user agent MUST roll
             back as necessary if the new description was partially applied when
             the failure occurred.</p>
+
+ 	    <p>
+ 	      If <code>a=identity</code> attributes are present, the browser
+ 	    </p>
 
             <p>A TBD exception is thrown if the SDP content is invalid.</p>
           </dd>
@@ -1528,6 +1571,89 @@
             </ol>
           </dd>
 
+	  <dt>void setIdentityProvider(DOMString provider, optional DOMString protocol, optional DOMString username)</dt>
+	  <dd>
+	    <p>
+	      Sets the identity provider to be used for a given <code>PeerConnection</code> object.
+	      If the <code><a>PeerConnection</a></code>.
+	    </p>
+	    
+            <p>When the <dfn id="dom-peerconnection-setidentityprovider"><code title=
+            "">setidentityprovider()</code></dfn> method is invoked, the user agent
+            MUST run the following steps:</p>
+	    
+	    <ol>
+	      <li>
+	      <p>Set the current identity values to the triplet <code>provider</code>,
+	      <code>protocol</code>, <code>username</code>.
+
+              <li>
+                <p>If the <code><a>PeerConnection</a></code> object's <a href=
+                "#peerconnection-readiness-state"><code>PeerConnection</code>
+                readiness state</a> is <code><a href=
+                "#widl-PeerConnection-ACTIVE">active</a></code>, and any of the
+		identity settings have changed, queue a task to run the following substeps:
+		<ol>
+		  <li>
+		    <p>If the <var>connection</var>’s <a href=
+		    "#peerconnection-readiness-state"><code>PeerConnection</code>
+		    readiness state</a> is <code><a href=
+		    "#widl-PeerConnection-CLOSED">CLOSED</a></code> (3), abort these
+		    steps.</p>
+		  </li>
+
+		  <li>
+		    <p>Instantiate a new IdP proxy and request an identity assertion.</p>
+		  </li>
+
+		  <li>
+		    <p>If/when the assertion is obtained, fire a renegotiationneeded event.</p>
+		  </li>
+		</li>
+	      </ol>
+	  </dd>
+
+	  <dt>void getIdentityAssertion()</dt>
+	  <dd>
+	    <p>
+	      Initiates the process of obtianing an identity assertion.
+	      Applications need not make this call. It is merely intended to allow
+	      them to start the process of obtaining identity assertions before
+	      a call is initiated. If an identity is needed, either because
+	      the browser has been configured with a default identity provider or
+	      because <dfn id="dom-peerconnection-setidentityprovider"><code title=
+            "">setidentityprovider()</code></dfn> method was called, then an
+	      identity will be automatically requested when an offer or answer is
+	      created.</p>
+
+	    <p>
+	      Queue a task to run the following substeps.
+	    </p>
+
+	    <ol>
+	      <li>
+		<p>If the <var>connection</var>’s <a href=
+		"#peerconnection-readiness-state"><code>PeerConnection</code>
+		readiness state</a> is <code><a href=
+		"#widl-PeerConnection-CLOSED">CLOSED</a></code> (3), abort these
+		steps.</p>
+	      </li><!-- close() was probably called just before this
+			task ran -->
+
+	      <li>
+		<p>Instantiate a new IdP proxy and request an identity assertion.</p>
+	      </li>
+	    </ol>
+	  </dd>
+
+	  <dt>readonly attribute IdentityAssertion peeridentity nullable</dt>
+	  
+	  <dd>
+	    <p>Contains the peer identity assertion information if an 
+	    identity assertion was provided and verified.</p>
+	  </dd>
+
+	  
           <dt>void close ()</dt>
 
           <dd>
@@ -2246,7 +2372,110 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
   </div-->
     </section>
   </section>
+  <section>
+    <h2 id="sec.identity-proxy">Identity Provider Interaction</h2>
+    
+    <p>
+      WebRTC offers and answers (and hence the channels established
+      by PeerConnection objects) can be authenticated by using web-based
+      Identity Providers. The idea is that the entity sending the
+      offer/answer acts as the Authenticating Party (AP) and obtains
+      an identity assertion from the IdP which it attaches to the
+      offer/answer. The consumer of the offer/answer (i.e., the
+      <code>PeerConnection</code> on which <code>setRemoteDescription()</code>
+      is called acts as the Relying Party (RP) and verifies the
+      assertion.
+    </p>
+    <p>
+      The interaction with the IdP is designed to 
+      decouple the browser from any particular identity provider; the browser need
+      only know how to load the IdP's JavaScript--which
+      is deterministic from the IdP's identity--and
+      the generic protocol for requesting and verifying
+      assertions. The IdP provides whatever logic
+      is necessary to bridge the generic protocol to
+      the IdP's specific requirements. Thus, a single
+      browser can support any number of identity protocols,
+      including being forward compatible with IdPs which
+      did not exist at the time the browser was written.
+      The generic protocol details are described in [RTCWEB-SECURITY-ARCH].
+      This document specifies the procedures required to 
+      instantiate the IdP proxy, request identity assertions, and consume the
+      results.
+    </p>
+    
+    <section>
+      <h3 id="sec.identity-proxy-communications">Peer-Connection/IdP Communications</h3>
+      <p>
+        In order to communicate with the IdP, the browser must instantiate
+        an isolated interpreted context [TODO: What's the technical term?],
+        such as an invisible IFRAME. The initial contents of the context
+        are loaded from a URI derived from the IdP's domain name.
+        [RTCWEB-SECURITY-ARCH; Section XXX]. The context MUST have
+        a MessageChannel named <code>window.TBD</code> which is "entangled" to the
+        <code>PeerConnection</code> and is unique to that subcontext.
+	This channel is used for messaging between the <code>PeerConnection</code> and the IdP.
+	All messages sent via this channel are strings, specifically the JSONified
+	versions of JS structs.
+      </p>
+      <p>
+        All messages sent from the <code>PeerConnection</code> to the
+        IdP context MUST have an  <code>origin</code> of
+        <code>rtcweb://peerconnection/</code>. 
+        The fact that ordinary
+        Web pages cannot set their origin values arbitrarily 
+        is an essential security feature, as it stops attackers
+        from requesting WebRTC-compatible identity assertions
+        from IdPs. IdP JS MUST check the origin of all
+        apparent messages from <code>PeerConnections</code>.
+      </p>
+    </section>
+    
+    <section>
+      <h3 id="sec.identity-proxy-assertion-request">Requesting Assertions</h3>
+      <p>
+	The identity assertion request process involves the following steps.
+      </p>
 
+      <ol>
+	<li>The <code>PeerConnection</code> instantiates an IdP context as described in the previous section.</li>.
+	<li>The IdP serves up the IdP JS code to the IdP context.</li>
+	<li>Once the IdP is loaded and ready to receive messages
+	it sends a "READY" message ([RTCWEB-SECURITY-ARCH; Section 5.6.5.2].
+	Note that this does not imply that the user is logged in, merely
+	that enough IdP state is booted up to be ready to handle PostMessage
+	calls.</li>
+	<li>The IdP sends a "SIGN" message (Section 5.6.5.2.2) to the
+	IdP proxy context. This message includes the material the
+	<code>PeerConnection</code> desires to be bound to the user's identity.</li>
+	<li>If the user is not logged in, at this point the IdP will
+	initiate the login process. For instance, it might pop up a dialog
+	box inviting the user to enter their (IdP) username and password.</li>
+	<li>Once the user is logged in (potentially after the previous step),
+	the IdP proxy generates an identity assertion (depending on the 
+	authentication protocol this may involve interacting with the IDP server).</li>
+	<li>Once the assertion is generated, the IdP proxy sends a response
+	(Section 5.6.5.2.2) containing the assertion to the <code>PeerConnection</code>
+	over the message channel.</li>
+	<li>The <code>PeerConnection</code> stores the assertion for use with
+	future offers or answers. If a <code>createOffer()</code> or 
+	<code>createAnswer()</code> is outstanding, then the 
+	assertion is inserted in the offer/answer.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h3 id="sec.identity-proxy-assertion-request">Verifying Assertions</h3>
+      <t>
+	
+
+      </t>
+    </section>
+
+<!--    <section>
+
+    </section>-->
+  </section>
   <section>
     <h2>Garbage collection</h2>
 
