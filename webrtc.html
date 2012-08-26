@@ -2553,9 +2553,38 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
       </t>
     </section>
 
-<!--    <section>
-
-    </section>-->
+    <section>
+      <h3>Examples</h3>
+      <p>
+       The identity system is designed so that applications need not
+       take any special action in order for users to generate and
+       verify identity assertions; if a user has configured an
+       IdP into their browser, then the browser will automatically
+       request generate assertions and the other side will automatically
+       verify them and display the results. However, applications may
+       with to exercise tighter control over the identity system
+       as shown by the following examples.
+      </p>
+      <div>
+        <p>This example shows how to configure the identity provider
+        and protocol.</p>
+        <pre class="example sh_javascript">
+          pc.setIdentityProvider("example.com", "default", "alice@example.com");
+        </pre>
+      </div>
+      
+      <div>
+        <p>This example shows how to consume identity assertions inside a 
+          Web application.
+        </p>
+        <pre class="example sh_javascript">
+          pc.onidentityresult = function(result) {
+            console.log("IdP= " + pc.peeridentity.idp +
+                        " identity=" + pc.peeridentity.name);
+          };
+        </pre>
+      </div>
+    </section>
   </section>
   <section>
     <h2>Garbage collection</h2>
