@@ -1016,14 +1016,6 @@
 	      procedures described in [RTCWEB-SECURITY-ARCH].
 	    </p>
 	  </dd>
-
-	  <dt>DOMString displayname</dt>
-	  <dd>
-	    <p>
-	      A "human readable" representation of the peer identity.
-	      This string was provided by the identity provider but
-	      is not technically verified.
-	    </p>
 	</dl>
       </section>
 
@@ -1756,6 +1748,16 @@
             <code><a>RTCPeerConnection</a></code> interface. It is called any
             time the <var>iceState</var> changes.
           </dd>
+
+          <dt>attribute EventHandler onidentityresult</dt>
+
+          <dd>
+            This event handler, of event handler event type <code><a href=
+            "#event-identityresult">identityresult</a></code>, MUST be
+            fired by all objects implementing the
+            <code><a>RTCPeerConnection</a></code> interface. It is called any
+            time an identity verification succeeds or fails.
+          </dd>
         </dl>
 
       </section>
@@ -2439,7 +2441,11 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
         an isolated interpreted context [TODO: What's the technical term?],
         such as an invisible IFRAME. The initial contents of the context
         are loaded from a URI derived from the IdP's domain name.
-        [RTCWEB-SECURITY-ARCH; Section XXX]. The IdP shall be chosen as
+        [RTCWEB-SECURITY-ARCH; Section XXX].
+       </p>
+      <p>
+	For purposes of generating assertions, 
+	the IdP shall be chosen as
         follows:
         <ol>
           <li>If the <code>setIdentityProvider()</code> method has been called,
@@ -2450,6 +2456,10 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
             with a chooser interface.
           </li>
         </ol>
+      </p>
+      <p>
+	In order to verify assertions, the IdP domain name and protocol shall
+	be equal to the "domain" and "protocol" fields of the identity assertion.
       </p>
       <p>
         The context MUST have
@@ -2499,9 +2509,9 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
 	(Section 5.6.5.2.2) containing the assertion to the <code>PeerConnection</code>
 	over the message channel.</li>
 	<li>The <code>PeerConnection</code> stores the assertion for use with
-	future offers or answers. If a <code>createOffer()</code> or 
-	<code>createAnswer()</code> is outstanding, then the 
-	assertion is inserted in the offer/answer.</li>
+	future offers or answers. If the identity request was triggered by
+        a <code>createOffer()</code> or 
+        <code>createAnswer()</code>, then the assertion is inserted in the offer/answer.</li>
       </ol>
     </section>
 
@@ -2532,6 +2542,12 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
 	<li>The <code>PeerConnection</code> displays the assertion information 
         in the browser UI and stores the assertion in the
         peeridentity attribute for availability to the JS application.
+	The assertion information to be displayed shall contain the
+	domain name of the IdP and the identity returned by the IdP
+	and must be displayed via some mechanism which cannot be
+	spoofed by content. [[OPEN ISSUE: The identity information should
+	also be available in the inspector interface 
+	defined in [RTCWEB-SECURITY-ARCH; Section 5.5].
         </li>
       </ol>
       </t>
@@ -2851,6 +2867,15 @@ var gameDataChan = peerConn.createDataChannel("data", { "reliable": false, "prio
 
           <td>TODO</td>
         </tr>
+
+        <tr>
+          <td><dfn id="event-identityresult"><code>identityresult</code></dfn></td>
+
+          <td><code><a>RTCIdentityEvent</a></code></td>
+
+          <td>TODO</td>
+        </tr>
+
       </tbody>
     </table>
 
