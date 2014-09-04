@@ -173,6 +173,17 @@
               peer unless it can be successfully authenticated with the
               provided name.</p>
             </dd>
+
+            <dt>sequence<Key> dtlsKeys</dt>
+
+            <dd>
+              <p>Sets the cryptographic keys to be used to establish 
+              the DTLS connection. If present, this value MUST consist
+              of one or more WebCrypto
+              <a href="http://www.w3.org/TR/WebCryptoAPI/#key-interface">Key</a>
+              values
+              with keyUsage "webrtc".</p>
+            </dd>
           </dl>
         </section>
 
@@ -421,6 +432,13 @@
             <li>
               <p>Initialize an internal variable to represent a queue of
               <code>operations</code> with an empty set.</p>
+            </li>
+
+            <li>
+              <p>If the <code>dtlsKeys</code> value in the <code>RTCConfiguration</code>
+              structure is non-empty, assign it to the <code>dtlsKeys</code> attribute.
+              Otherwise, queue a task to create a suitable new key or set of keys and
+              assign them to the attribute.</p>
             </li>
 
             <li>
@@ -1356,6 +1374,20 @@
                 </dfn> attribute MUST return the state of the <a
               href="#rtcpeerconnection-ice-agent"><code>RTCPeerConnection</code>
               ICE Agent</a> ICE state.</p>
+            </dd>
+
+            <dt>readonly attribute sequence<Key> dtlsKeys</dt>
+              <p>The <code>dtlsKey</code> attribute MUST return the
+              keys set in the <code>RTCConfiguration</code> argument to
+              the <code>RTCPeerConnection</code> constructor if one was
+              provided. Otherwise, it MUST either be the keys which
+              the <code>RTCPeerConnection</code> has generated for use
+              in the connection or be empty if no keys have yet been
+              generated (this allows for asynchronous generation.)
+              </p>
+            <dd>
+
+
             </dd>
 
             <dt>RTCConfiguration getConfiguration()</dt>
@@ -3866,6 +3898,44 @@ function logError(error) {
       </section>
     </section>
 
+    <section>
+      <h2 id="sec.Key Generation">Key Generation</h2>
+      <p>
+        Cryptographic keys for <code>RTCPeerConnection</code>s are expressed
+        as <a href="http://www.w3.org/TR/WebCryptoAPI/#key-interface">Key</a>
+        objects. They can either be generated internally by the peerconnection
+        or via the <code>rtcGenerateKey</code> API call.
+      </p>
+      <dl class="idl" title="partial interface RTCKeys">
+        <dt>Promise<any> rtcGenerateKey(AlgorithmIdentifier algorithm)</dt>
+      </dl>
+      <dd>
+        <p>Behaves the same as WebCrypto <a href="http://www.w3.org/TR/WebCryptoAPI/#dfn-SubtleCrypto-method-generateKey">generateKey</a> with the following restrictions.</p>
+        <li>
+          <p>Only the following <code>AlgorithmIdentifiers</code> are legal:
+          <a href="http://www.w3.org/TR/WebCryptoAPI/#rsaes-pkcs1">RSAES-PKCS1-v1_5</a>,
+          <a href="http://www.w3.org/TR/WebCryptoAPI/#rsasa-pkcs1">RSASA-PKCS1-v1_5</a>,
+          <a href="http://www.w3.org/TR/WebCryptoAPI/#rsa-pss">RSA-PSS</a>,
+          (note, this is not useful with current TLS but is included for future-proofing),
+          and <a href="http://www.w3.org/TR/WebCryptoAPI/#ecdsa">ECDSA</a>.</p>
+        </li>
+
+        <li>
+          <p>The <code>keyUsage</code> value will always be "webrtc".
+          Keys of this type MUST NOT be used by any WebCrypto cryptographic
+          They may only be inspected or passed into a <code>RTCPeerConnection</code>.
+          </p>
+        </li>
+
+        <li>
+          <p>The <code>extractable</code> value will always be set to <code>false</code>.</p>
+        </li>
+      </dd>
+      <p>
+        When a <code>RTCPeerConnection</code> internally generates keys, it is
+        RECOMMENDED that it generate a key of type [TODO].
+      </p>
+    </section>
     <section>
       <h2 id="sec.identity-proxy">Identity</h2>
 
