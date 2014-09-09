@@ -169,20 +169,33 @@
             <dd>
               <p>Sets the <a href="#target-peer-identity">target peer
               identity</a> for the <a>RTCPeerConnection</a>. The
-              <a>RTCPeerConnection</a> will establish a connection to a remote
-              peer unless it can be successfully authenticated with the
+              <a>RTCPeerConnection</a> will not establish a connection to a
+              remote peer unless it can be successfully authenticated with the
               provided name.</p>
             </dd>
 
-            <dt>sequence<Key> dtlsKeys</dt>
+            <dt>sequence&lt;CryptoKeyPair&gt; dtlsKeys</dt>
 
             <dd>
-              <p>Sets the cryptographic keys to be used to establish 
+              <p>Sets the cryptographic keys to be used to establish
               the DTLS connection. If present, this value MUST consist
               of one or more WebCrypto
-              <a href="http://www.w3.org/TR/WebCryptoAPI/#key-interface">Key</a>
-              values
-              with keyUsage "webrtc".</p>
+              <!-- TODO change link to CryptoKeyPair -->
+              <a href="http://www.w3.org/TR/WebCryptoAPI/#key-interface">CryptoKeyPair</a>
+              objects.  If it is not present, then the <code>RTCPeerConnection</code>
+              implementation MUST generate a new key pair.</p>
+              <p>The CryptoKey objects contained in these key
+              pairs MUST have the keyUsage "webrtc" and no other.  If
+              this attribute contains any CryptoKey object with a different
+              keyUsage, it will be ignored.</p>
+              <p>Although any given DTLS connection will use only one key
+              pair, this attribute allows the caller to provide multiple
+              key pairs that support different algorithms.  This attribute
+              SHOULD NOT contain more than one CryptoKeyPair per algorithm.
+              The <code>RTCPeerConnection</code> implementation will select
+              which of the key pairs is used for a given connection; the
+              algorithm for this choice is outside the scope of this
+              specification.</p>
             </dd>
           </dl>
         </section>
@@ -436,9 +449,9 @@
 
             <li>
               <p>If the <code>dtlsKeys</code> value in the <code>RTCConfiguration</code>
-              structure is non-empty, assign it to the <code>dtlsKeys</code> attribute.
-              Otherwise, queue a task to create a suitable new key or set of keys and
-              assign them to the attribute.</p>
+              structure is non-empty, store it internally for use in establishing
+              DTLS connections.  Set the <code>dtlsKeys</code> attribute to 
+              the empty sequence.</p>
             </li>
 
             <li>
@@ -1376,18 +1389,17 @@
               ICE Agent</a> ICE state.</p>
             </dd>
 
-            <dt>readonly attribute sequence<Key> dtlsKeys</dt>
-              <p>The <code>dtlsKey</code> attribute MUST return the
-              keys set in the <code>RTCConfiguration</code> argument to
-              the <code>RTCPeerConnection</code> constructor if one was
-              provided. Otherwise, it MUST either be the keys which
-              the <code>RTCPeerConnection</code> has generated for use
-              in the connection or be empty if no keys have yet been
-              generated (this allows for asynchronous generation.)
-              </p>
+            <dt>readonly attribute sequence&lt;CryptoKeyPair&gt; dtlsKeys</dt>
+
             <dd>
-
-
+              <p>The <code>dtlsKeys</code> attribute is always set to the
+              empty list when a new <code>RTCPeerConnection</code> is created.
+              Whenever the <code>RTCPeerConnection</code> generates a new key
+              pair (e.g., due to createOffer() or createAnswer() being called), 
+              or selects one from among the key pairs provided in the
+              <code>dtlsKeys</code> attribute of the <code>RTCConfiguration</code>,
+              it MUST add that key pair to the <code>dtlsKeys</code> attribute.
+              </p>
             </dd>
 
             <dt>RTCConfiguration getConfiguration()</dt>
@@ -4065,7 +4077,12 @@ function logError(error) {
 
           <li>The IdP sends a "SIGN" message to the IdP proxy. This message
           includes the material the <code>RTCPeerConnection</code> desires to
-          be bound to the user's identity.</li>
+          be bound to the user's identity.  This material MUST include any
+          public keys that are to be used for DTLS connections related to this
+          identity transaction.  If the <code>dtlsKeys</code> attribute was
+          provided in the <code>RTCConfiguration</code> for this <code>
+          RTCPeerConnection</code>, then the keys MUST be selected from the
+          key pairs in that attribute.</li>
 
           <li>If the user has been authenticated by the IdP, and the IdP is
           willing to generate an identity assertion, the IdP generates an
